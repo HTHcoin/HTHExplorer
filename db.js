@@ -145,12 +145,31 @@ module.exports.Market = mongoose.model('Market');
 module.exports.TokenTransfer = mongoose.model('TokenTransfer');
 
 mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost/explorerDB', {
+mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/explorerDB', {
   useMongoClient: true
   // poolSize: 5,
   // rs_name: 'myReplicaSetName',
   // user: 'explorer',
   // pass: 'yourdbpasscode'
+});
+
+mongoose.connection.on('connected', () => {
+  console.log('MongoDB connected successfully');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('MongoDB disconnected');
+});
+
+process.on('SIGINT', () => {
+  mongoose.connection.close(() => {
+    console.log('MongoDB disconnected through app termination');
+    process.exit(0);
+  });
 });
 
 // mongoose.set('debug', true);
