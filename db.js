@@ -150,7 +150,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost/explorerDB', {
   // poolSize: 5,
   // rs_name: 'myReplicaSetName',
   // user: 'explorer',
-  // pass: 'yourdbpasscode'
+  // pass: 'Cale1223@'
 });
 
 // mongoose.set('debug', true);

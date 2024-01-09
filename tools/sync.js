@@ -28,24 +28,19 @@ const TokenTransfer = mongoose.model('TokenTransfer');
 const ERC20_METHOD_DIC = { '0xa9059cbb': 'transfer', '0xa978501e': 'transferFrom' };
 
 /**
-  Start config for node connection and sync
-**/
-/**
- * nodeAddr: node address
- * wsPort:  rpc port
- * bulkSize: size of array in block to use bulk operation
- */
+ * Start config for node connection and sync
+ **/
 // load config.json
-const config = { nodeAddr: 'localhost', wsPort: 8546, bulkSize: 100 };
+const config = { nodeAddr: 'localhost', wsPort: 7118, bulkSize: 100 };
 try {
   var local = require('../config.json');
   _.extend(config, local);
   console.log('config.json found.');
 } catch (error) {
   if (error.code === 'MODULE_NOT_FOUND') {
-    var local = require('../config.example.json');
+    var local = require('../config.json');
     _.extend(config, local);
-    console.log('No config file found. Using default configuration... (config.example.json)');
+    console.log('No config file found. Using default configuration... (config.json)');
   } else {
     throw error;
     process.exit(1);
@@ -53,8 +48,20 @@ try {
 }
 
 console.log(`Connecting ${config.nodeAddr}:${config.wsPort}...`);
-// Sets address for RPC WEB3 to connect to, usually your node IP address defaults ot localhost
+// Sets address for RPC WEB3 to connect to, usually your node IP address defaults to localhost
 const web3 = new Web3(new Web3.providers.WebsocketProvider(`ws://${config.nodeAddr}:${config.wsPort.toString()}`));
+
+web3.eth.net.getId().then(netId => {
+  console.log(`Connected to network ID: ${netId}`);
+}).catch(error => {
+  console.error('Error getting network ID:', error);
+});
+
+web3.eth.net.isListening().then(listening => {
+  console.log(`Web3 is listening: ${listening}`);
+}).catch(error => {
+  console.error('Error checking if Web3 is listening:', error);
+});
 
 const normalizeTX = async (txData, receipt, blockData) => {
   const tx = {

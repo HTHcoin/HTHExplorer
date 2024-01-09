@@ -80,6 +80,15 @@ app.use((err, req, res, next) => {
 
 const http = require('http').Server(app);
 
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1); // Exit the process with an error code
+});
+
+http.on('error', (error) => {
+  console.error('HTTP server error:', error);
+});
+
 http.listen(app.get('port'), '0.0.0.0', () => {
   console.log(`Express server listening on port ${app.get('port')}`);
 });
