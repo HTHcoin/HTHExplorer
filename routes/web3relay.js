@@ -27,7 +27,7 @@ const { filterTrace } = require('./filters');
 
 /*Start config for node connection and sync*/
 // load config.json
-const config = { nodeAddr: 'localhost', wsPort: 8546 };
+const config = { nodeAddr: 'localhost', wsPort: 7119 };
 try {
   var local = require('../config.json');
   _.extend(config, local);
@@ -45,7 +45,11 @@ try {
 
 //Create Web3 connection
 console.log(`Connecting ${config.nodeAddr}:${config.wsPort}...`);
-web3 = new Web3(new Web3.providers.WebsocketProvider(`ws://${config.nodeAddr}:${config.wsPort}`));
+//web3 = new Web3(new Web3.providers.WebsocketProvider(`ws://${config.nodeAddr}:${config.wsPort}`));
+
+const { WebsocketProvider } = require('web3-providers');
+web3 = new Web3(new WebsocketProvider({ host: config.nodeAddr, port: config.wsPort }));
+
 
 if (web3.eth.net.isListening()) console.log('Web3 connection established');
 else throw 'No connection, please specify web3host in conf.json';

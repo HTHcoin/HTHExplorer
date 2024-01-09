@@ -49,8 +49,10 @@ try {
 
 console.log(`Connecting ${config.nodeAddr}:${config.wsPort}...`);
 // Sets address for RPC WEB3 to connect to, usually your node IP address defaults to localhost
-const web3 = new Web3(new Web3.providers.WebsocketProvider(`ws://${config.nodeAddr}:${config.wsPort.toString()}`));
+//const web3 = new Web3(new Web3.providers.WebsocketProvider(`ws://${config.nodeAddr}:${config.wsPort.toString()}`));
 
+const { WebsocketProvider } = require('web3-providers');
+const web3 = new Web3(new Web3.providers.WebsocketProvider(`ws://${config.nodeAddr}:${config.wsPort}`));
 web3.eth.net.getId().then(netId => {
   console.log(`Connected to network ID: ${netId}`);
 }).catch(error => {
