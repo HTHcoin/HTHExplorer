@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+global.EventTarget = require('events').EventEmitter;
+const { EventEmitter } = require('events');
+global.EventTarget = EventEmitter || require('events').EventEmitter;
+
 require('./db');
 
 const express = require('express');

@@ -45,7 +45,8 @@ try {
 
 //Create Web3 connection
 console.log(`Connecting ${config.nodeAddr}:${config.wsPort}...`);
-web3 = new Web3(new Web3.providers.WebsocketProvider(`ws://${config.nodeAddr}:${config.wsPort}`));
+//web3 = new Web3(new Web3.providers.WebsocketProvider(`ws://${config.nodeAddr}:${config.wsPort}`));
+web3 = new Web3(new Web3.providers.WebsocketProvider(`ws://${config.nodeAddr}:${config.wsPort}`, { clientConfig: { maxReceivedFrameSize: 100000000, maxReceivedMessageSize: 100000000 } }));
 
 if (web3.eth.net.isListening()) console.log('Web3 connection established');
 else throw 'No connection, please specify web3host in conf.json';
