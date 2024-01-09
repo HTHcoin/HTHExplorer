@@ -1,6 +1,6 @@
 {
     "nodeAddr":     "localhost",
-    "wsPort":       8546,
+    "wsPort":       7118,
     "startBlock":   0,
     "endBlock":     "latest",
     "quiet":        true,
