@@ -36,7 +36,7 @@ const ERC20_METHOD_DIC = { '0xa9059cbb': 'transfer', '0xa978501e': 'transferFrom
  * bulkSize: size of array in block to use bulk operation
  */
 // load config.json
-const config = { nodeAddr: 'localhost', wsPort: 7119, bulkSize: 100 };
+const config = { nodeAddr: '154.12.237.243', wsPort: 7119, bulkSize: 100 };
 try {
   var local = require('../config.json');
   _.extend(config, local);

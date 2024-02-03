@@ -12,24 +12,31 @@ function filterTX(txs, value) {
 }
 
 function filterTrace(txs, value) {
-  return txs.map((tx) => {
-    const t = tx;
-    if (t.type == 'suicide') {
-      if (t.action.address) t.from = t.action.address;
-      if (t.action.balance) t.value = etherUnits.toEther(new BigNumber(t.action.balance), 'wei');
-      if (t.action.refundAddress) t.to = t.action.refundAddress;
-    } else {
-      if (t.action.to) t.to = t.action.to;
-      t.from = t.action.from;
-      if (t.action.gas) t.gas = new BigNumber(t.action.gas).toNumber();
-      if ((t.result) && (t.result.gasUsed)) t.gasUsed = new BigNumber(t.result.gasUsed).toNumber();
-      if ((t.result) && (t.result.address)) t.to = t.result.address;
-      t.value = etherUnits.toEther(new BigNumber(t.action.value), 'wei');
-    }
-    return t;
-  });
-}
+  console.log('Received trace for filtering:', txs);
+  if (!Array.isArray(txs)) {
+    console.error('Invalid traces data:', txs);
+    return [];
+  }
 
+  return txs
+    .filter((tx) => tx.action) // Filter out traces without action property
+    .map((tx) => {
+      const t = tx;
+      if (t.type == 'suicide') {
+        if (t.action.address) t.from = t.action.address;
+        if (t.action.balance) t.value = etherUnits.toEther(new BigNumber(t.action.balance), 'wei');
+        if (t.action.refundAddress) t.to = t.action.refundAddress;
+      } else {
+        if (t.action.to) t.to = t.action.to;
+        t.from = t.action.from;
+        if (t.action.gas) t.gas = new BigNumber(t.action.gas).toNumber();
+        if (t.result && t.result.gasUsed) t.gasUsed = new BigNumber(t.result.gasUsed).toNumber();
+        if (t.result && t.result.address) t.to = t.result.address;
+        t.value = etherUnits.toEther(new BigNumber(t.action.value), 'wei');
+      }
+      return t;
+    });
+}
 function filterBlock(block, field, value) {
   let tx = block.transactions.filter(obj => obj[field] == value);
   tx = tx[0];
@@ -39,13 +46,18 @@ function filterBlock(block, field, value) {
 
 /* make blocks human readable */
 function filterBlocks(blocks) {
-  if (blocks.constructor !== Array) {
+  if (!blocks) {
+    return [];
+  }
+
+  if (!Array.isArray(blocks)) {
     const b = blocks;
     const ascii = hex2ascii(blocks.extraData);
     b.extraDataHex = blocks.extraData;
     b.extraData = ascii;
     return b;
   }
+
   return blocks.map((block) => {
     const b = block;
     const ascii = hex2ascii(block.extraData);

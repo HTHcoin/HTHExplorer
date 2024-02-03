@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const Block = mongoose.model('Block');
 const Transaction = mongoose.model('Transaction');
 const Account = mongoose.model('Account');
@@ -8,9 +7,7 @@ const filters = require('./filters');
 
 module.exports = function (app) {
   const web3relay = require('./web3relay');
-
   const Token = require('./token');
-
   const compile = require('./compiler');
   const stats = require('./stats');
   const richList = require('./richlist');
@@ -67,16 +64,15 @@ const getAddr = async (req, res) => {
       res.write(JSON.stringify(data));
       res.end();
     });
-
 };
-var getAddrCounter = function (req, res) {
+
+const getAddrCounter = function (req, res) {
   const addr = req.body.addr.toLowerCase();
   const count = parseInt(req.body.count);
   const data = { recordsFiltered: count, recordsTotal: count, mined: 0 };
 
   async.waterfall([
     function (callback) {
-
       Transaction.count({ $or: [{ 'to': addr }, { 'from': addr }] }, (err, count) => {
         if (!err && count) {
           // fix recordsTotal
@@ -85,23 +81,22 @@ var getAddrCounter = function (req, res) {
         }
         callback(null);
       });
-
     }, function (callback) {
-
       Block.count({ 'miner': addr }, (err, count) => {
         if (!err && count) {
           data.mined = count;
         }
         callback(null);
       });
-
-    }], (err) => {
-    res.write(JSON.stringify(data));
-    res.end();
-  });
-
+    }],
+    (err) => {
+      res.write(JSON.stringify(data));
+      res.end();
+    }
+  );
 };
-var getBlock = function (req, res) {
+
+const getBlock = function (req, res) {
   // TODO: support queries for block hash
   const txQuery = 'number';
   const number = parseInt(req.body.block);
@@ -119,7 +114,8 @@ var getBlock = function (req, res) {
     res.end();
   });
 };
-var getTx = function (req, res) {
+
+const getTx = function (req, res) {
   const tx = req.body.tx.toLowerCase();
   const txFind = Block.findOne({ 'transactions.hash': tx }, 'transactions timestamp')
     .lean(true);
@@ -136,10 +132,8 @@ var getTx = function (req, res) {
     }
   });
 };
-/*
-  Fetch data from DB
-*/
-var getData = function (req, res) {
+
+const getData = function (req, res) {
   // TODO: error handling for invalid calls
   const action = req.body.action.toLowerCase();
   const { limit } = req.body;
@@ -154,10 +148,7 @@ var getData = function (req, res) {
   }
 };
 
-/*
-  Total supply API code
-*/
-var getTotal = function (req, res) {
+const getTotal = function (req, res) {
   Account.aggregate([
     { $group: { _id: null, totalSupply: { $sum: '$balance' } } },
   ]).exec((err, docs) => {
@@ -170,9 +161,6 @@ var getTotal = function (req, res) {
   });
 };
 
-/*
-  temporary blockstats here
-*/
 const latestBlock = function (req, res) {
   const block = Block.findOne({}, 'totalDifficulty')
     .lean(true).sort('-number');
@@ -190,12 +178,11 @@ const getLatest = function (lim, res, callback) {
   });
 };
 
-/* get blocks from db */
 const sendBlocks = function (lim, res) {
   const blockFind = Block.find({}, 'number timestamp miner extraData')
     .lean(true).sort('-number').limit(lim);
   blockFind.exec((err, docs) => {
-    if (!err && docs) {
+    if (!err && docs.length > 0) {
       const blockNumber = docs[docs.length - 1].number;
       // aggregate transaction counters
       Transaction.aggregate([
@@ -215,6 +202,10 @@ const sendBlocks = function (lim, res) {
         res.write(JSON.stringify({ 'blocks': filters.filterBlocks(docs) }));
         res.end();
       });
+    } else if (docs.length === 0) {
+      // Handle the case when docs is empty
+      res.write(JSON.stringify({ 'blocks': [] }));
+      res.end();
     } else {
       console.log(`blockFind error:${err}`);
       res.write(JSON.stringify({ 'error': true }));
@@ -237,3 +228,4 @@ const DATA_ACTIONS = {
   'latest_blocks': sendBlocks,
   'latest_txs': sendTxs,
 };
+
