@@ -27,7 +27,7 @@ const { filterTrace } = require('./filters');
 
 /*Start config for node connection and sync*/
 // load config.json
-const config = { nodeAddr: 'localhost', wsPort: 8546 };
+const config = { nodeAddr: '154.12.237.243', wsPort: 7119 };
 try {
   var local = require('../config.json');
   _.extend(config, local);
@@ -158,16 +158,30 @@ exports.data = async (req, res) => {
     // from block to end block, paging "toAddress":[addr],
     // start from creation block to speed things up
     // TODO: store creation block
-    const filter = { 'fromBlock': '0x1d4c00', 'toAddress': [addr] };
-    web3.trace.filter(filter, (err, tx) => {
-      if (err || !tx) {
-        console.error(`TraceWeb3 error :${err}`);
+
+    // Check if web3.trace is available
+    if (web3.trace) {
+      const filter = { 'fromBlock': '0x1d4c00', 'toAddress': [addr] };
+      try {
+        web3.trace.filter(filter, (err, tx) => {
+          if (err || !tx) {
+            console.error(`TraceWeb3 error: ${err}`);
+            res.write(JSON.stringify({ 'error': true }));
+          } else {
+            res.write(JSON.stringify(filterTrace(tx)));
+          }
+          res.end();
+        });
+      } catch (traceError) {
+        console.error(`Error in trace filter: ${traceError}`);
         res.write(JSON.stringify({ 'error': true }));
-      } else {
-        res.write(JSON.stringify(filterTrace(tx)));
+        res.end();
       }
+    } else {
+      console.error('web3.trace is not available');
+      res.write(JSON.stringify({ 'error': true }));
       res.end();
-    });
+    }
   } else if ('addr' in req.body) {
     var addr = req.body.addr.toLowerCase();
     const { options } = req.body;
@@ -219,24 +233,24 @@ exports.data = async (req, res) => {
 
     Block.findOne({ $or: [{ hash: blockNumOrHash }, { number: blockNumOrHash }] },
       { '_id': 0 }).lean(true).exec('findOne', (err, doc) => {
-      if (err || !doc) {
-        web3.eth.getBlock(blockNumOrHash, (err, block) => {
-          if (err || !block) {
-            console.error(`BlockWeb3 error :${err}`);
-            res.write(JSON.stringify({ 'error': true }));
-          } else {
-            res.write(JSON.stringify(filterBlocks(block)));
-          }
-          res.end();
-        });
-      } else {
-        Transaction.find({ blockNumber: doc.number }).distinct('hash', (err, txs) => {
-          doc['transactions'] = txs;
-          res.write(JSON.stringify(filterBlocks(doc)));
-          res.end();
-        });
-      }
-    });
+        if (err || !doc) {
+          web3.eth.getBlock(blockNumOrHash, (err, block) => {
+            if (err || !block) {
+              console.error(`BlockWeb3 error :${err}`);
+              res.write(JSON.stringify({ 'error': true }));
+            } else {
+              res.write(JSON.stringify(filterBlocks(block)));
+            }
+            res.end();
+          });
+        } else {
+          Transaction.find({ blockNumber: doc.number }).distinct('hash', (err, txs) => {
+            doc['transactions'] = txs;
+            res.write(JSON.stringify(filterBlocks(doc)));
+            res.end();
+          });
+        }
+      });
 
     /*
     / TODO: Refactor, "block" / "uncle" determinations should likely come later
@@ -310,7 +324,7 @@ exports.data = async (req, res) => {
     console.error(`Invalid Request: ${action}`);
     res.status(400).send();
   }
-
 };
 
 exports.eth = web3.eth;
+
