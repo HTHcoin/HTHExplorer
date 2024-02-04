@@ -4,7 +4,7 @@ angular.module('BlocksApp').controller('ContractController', function($statePara
     //fetch compiler options
     $scope.compilerVersions = [];
 
-    $http.get('https://ethereum.github.io/solc-bin/bin/list.json').then(function (resp) {
+    $http.get('https://binaries.soliditylang.org/bin/list.json').then(function (resp) {
       function buildVersion (build) {
         if (build.prerelease && build.prerelease.length > 0) {
           return build.version + '-' + build.prerelease

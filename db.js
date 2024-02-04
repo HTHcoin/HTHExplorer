@@ -151,6 +151,6 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1/explorerDB', {
   // poolSize: 5,
   // rs_name: 'myReplicaSetName',
   user: 'explorer',
-  pass: 'Cale1223@'
+  pass: '1223Cale7112'
 });
 // mongoose.set('debug', true);
